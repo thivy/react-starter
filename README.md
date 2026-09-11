@@ -18,6 +18,44 @@ Open the URL printed by Vite. If the default port is occupied, Vite chooses the
 next available port. The app is also compatible with the existing Vite build and
 preview workflow.
 
+## GitHub Pages
+
+The app runs entirely in the browser and can be hosted on GitHub Pages without a
+backend or API keys. The [Pages workflow](.github/workflows/pages.yml) installs the
+locked dependencies with Bun, runs lint and physics tests, builds the app, and
+publishes the generated `dist` artifact.
+
+1. In your GitHub repository, open **Settings > Pages**.
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+3. Push or merge this configuration and the application into `main`. Automatic
+   deployments run only for pushes to `main`; work on another branch must be merged
+   first.
+4. In **Actions**, open **Deploy to GitHub Pages** and wait for both the `build` and
+   `deploy` jobs to succeed. The deployment URL is shown in the run and in
+   **Settings > Pages**.
+
+To redeploy without a new commit, use **Actions > Deploy to GitHub Pages > Run
+workflow** and select `main`. The workflow uses GitHub's built-in token; no personal
+access token or separate `gh-pages` branch is needed. GitHub Pages must be available
+for the repository's visibility and plan.
+
+For a project repository, the address is normally
+`https://<username>.github.io/<repository>/`. An account site named
+`<username>.github.io` is served at the domain root. Relative asset paths in
+[vite.config.ts](vite.config.ts) support both layouts and custom domains without
+hardcoding the repository name. If a custom domain is already configured, preserve
+that repository's Pages settings.
+
+To smoke-test the production build locally under a repository-style path:
+
+```sh
+bun run build
+bun run preview --base /milo-pages-check/
+```
+
+Open `http://localhost:4173/milo-pages-check/`, or the port printed by Vite. Use
+GitHub's workflow to publish the build, not the local preview server.
+
 ## Controls
 
 | Input           | Action                                              |
