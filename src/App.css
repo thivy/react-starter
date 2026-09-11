@@ -2,48 +2,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-.scene-overlay {
-  position: absolute;
-  top: max(24px, env(safe-area-inset-top));
-  left: max(24px, env(safe-area-inset-left));
-  z-index: 1;
-  max-width: calc(100% - 48px);
-  pointer-events: none;
-}
-
-.scene-overlay h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.scene-overlay p {
-  margin: 8px 0 16px;
-  color: var(--cp-text-muted);
-  font-size: 14px;
-}
-
-.scene-overlay button {
-  padding: 8px 12px;
-  border: 1px solid var(--cp-border);
-  border-radius: 0.625rem;
-  background: var(--cp-panel-strong);
-  color: var(--cp-text);
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.scene-overlay button:hover {
-  border-color: var(--cp-accent);
-}
-
-.scene-overlay button:focus-visible {
-  outline: 2px solid var(--cp-accent);
-  outline-offset: 4px;
+  background: linear-gradient(180deg, #eefaf7 0%, #f7f4ef 48%, #dfe8d8 100%);
 }
 
 .scene-fallback {
@@ -52,4 +11,113 @@
   padding: 24px;
   place-items: center;
   text-align: center;
+}
+
+.hud {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hud-card {
+  min-width: 220px;
+  padding: 14px 18px;
+  border: 1px solid rgba(25, 30, 38, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 20px 32px rgba(39, 48, 61, 0.08);
+}
+
+.hud-label {
+  color: rgba(26, 31, 34, 0.72);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hud-value {
+  margin-top: 8px;
+  font-size: clamp(1.8rem, 2.2vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.08em;
+  color: #1d1f24;
+}
+
+.hud-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.status-pill,
+.direction-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(14, 19, 28, 0.06);
+  color: rgba(28, 31, 36, 0.8);
+}
+
+.status-pill.active {
+  background: rgba(42, 222, 169, 0.15);
+  color: #0d8d6c;
+}
+
+.legend {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  max-width: min(44vw, 420px);
+  pointer-events: none;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(38, 44, 54, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(10px);
+  color: rgba(27, 30, 36, 0.8);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .hud {
+    left: 14px;
+    right: 14px;
+    bottom: 16px;
+  }
+
+  .hud-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .legend {
+    top: 14px;
+    right: 14px;
+    left: 14px;
+    justify-content: flex-start;
+  }
 }

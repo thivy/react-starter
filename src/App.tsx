@@ -1,20 +1,31 @@
 import { Canvas } from '@react-three/fiber'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import Scene from './components/Scene'
 import './App.css'
 
+type HudState = {
+  speed: number
+  heading: number
+  boost: boolean
+}
+
 function App() {
-  const [animated, setAnimated] = useState(
-    () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
+  const [hud, setHud] = useState<HudState>({ speed: 0, heading: 0, boost: false })
+
+  const direction = useMemo(() => {
+    const angle = ((hud.heading % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)
+    const segments = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+    const index = Math.round((angle / (Math.PI / 4)) % segments.length)
+    return segments[index]
+  }, [hud.heading])
 
   return (
     <main className="app">
       <Canvas
         shadows
         dpr={[1, 2]}
-        camera={{ position: [5, 4, 6], fov: 45, near: 0.1, far: 100 }}
-        aria-label="3D scene with a rotating cube above a grid"
+        camera={{ position: [6, 4.5, 9], fov: 42, near: 0.1, far: 200 }}
+        aria-label="3D robot driving scene"
         fallback={
           <div className="scene-fallback" role="alert">
             This example requires WebGL. Try a browser with hardware acceleration
@@ -22,16 +33,27 @@ function App() {
           </div>
         }
       >
-        <Scene animated={animated} />
+        <Scene onHudUpdate={setHud} />
       </Canvas>
 
-      <section className="scene-overlay" aria-label="Scene controls">
-        <h1>3D Playground</h1>
-        <p>Drag to orbit. Scroll or pinch to zoom.</p>
-        <button type="button" onClick={() => setAnimated((value) => !value)}>
-          {animated ? 'Pause rotation' : 'Resume rotation'}
-        </button>
-      </section>
+      <div className="hud" aria-live="polite">
+        <div className="hud-card">
+          <div className="hud-label">Speed</div>
+          <div className="hud-value">{Math.round(Math.abs(hud.speed) * 12)} km/h</div>
+          <div className="hud-meta">
+            <span className={`status-pill ${hud.boost ? 'active' : ''}`}>
+              {hud.boost ? 'Boost ON' : 'Boost OFF'}
+            </span>
+            <span className="direction-pill">{direction}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="legend" aria-label="Driving controls">
+        <span>WASD / Arrows</span>
+        <span>Space brake</span>
+        <span>Shift boost</span>
+      </div>
     </main>
   )
 }
