@@ -1,37 +1,80 @@
 import { Canvas } from '@react-three/fiber'
 import { useState } from 'react'
-import Scene from './components/Scene'
+import Scene, { type HudState } from './components/Scene'
 import './App.css'
 
 function App() {
-  const [animated, setAnimated] = useState(
-    () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  )
+  const [powerOn, setPowerOn] = useState(true)
+  const [lightsOn, setLightsOn] = useState(true)
+  const [hud, setHud] = useState<HudState>({
+    speed: 0,
+    boost: false,
+    heading: 0,
+    power: true,
+    lights: true,
+  })
 
   return (
     <main className="app">
       <Canvas
         shadows
         dpr={[1, 2]}
-        camera={{ position: [5, 4, 6], fov: 45, near: 0.1, far: 100 }}
-        aria-label="3D scene with a rotating cube above a grid"
+        camera={{ position: [0, 3.8, 8], fov: 42, near: 0.1, far: 200 }}
+        aria-label="Interactive 3D robot driving simulation"
         fallback={
           <div className="scene-fallback" role="alert">
-            This example requires WebGL. Try a browser with hardware acceleration
+            This experience requires WebGL. Try a browser with hardware acceleration
             enabled.
           </div>
         }
       >
-        <Scene animated={animated} />
+        <Scene
+          onHudChange={setHud}
+          lightsOn={lightsOn}
+          powerOn={powerOn}
+          onTogglePower={() => setPowerOn((value) => !value)}
+          onToggleLights={() => setLightsOn((value) => !value)}
+        />
       </Canvas>
 
-      <section className="scene-overlay" aria-label="Scene controls">
-        <h1>3D Playground</h1>
-        <p>Drag to orbit. Scroll or pinch to zoom.</p>
-        <button type="button" onClick={() => setAnimated((value) => !value)}>
-          {animated ? 'Pause rotation' : 'Resume rotation'}
-        </button>
-      </section>
+      <div className="hud" aria-live="polite">
+        <div className="hud-panel speed-panel">
+          <span className="hud-label">Speed</span>
+          <strong>{Math.round(hud.speed)} km/h</strong>
+        </div>
+
+        <div className="hud-panel compass-panel">
+          <span className="hud-label">Heading</span>
+          <div className="compass">
+            <span className="needle" style={{ transform: `rotate(${hud.heading}rad)` }} />
+          </div>
+        </div>
+
+        <div className="hud-panel boost-panel">
+          <span className="hud-label">Boost</span>
+          <strong className={hud.boost ? 'boost-active' : ''}>
+            {hud.boost ? 'Active' : 'Standby'}
+          </strong>
+        </div>
+      </div>
+
+      <div className="controls-panel">
+        <div className="controls-title">Controls</div>
+        <div className="controls-grid">
+          <span>W / ↑</span>
+          <span>Drive</span>
+          <span>S / ↓</span>
+          <span>Reverse</span>
+          <span>A / ←</span>
+          <span>Steer</span>
+          <span>D / →</span>
+          <span>Steer</span>
+          <span>Space</span>
+          <span>Brake</span>
+          <span>Shift</span>
+          <span>Boost</span>
+        </div>
+      </div>
     </main>
   )
 }

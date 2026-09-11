@@ -2,48 +2,7 @@
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-.scene-overlay {
-  position: absolute;
-  top: max(24px, env(safe-area-inset-top));
-  left: max(24px, env(safe-area-inset-left));
-  z-index: 1;
-  max-width: calc(100% - 48px);
-  pointer-events: none;
-}
-
-.scene-overlay h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.scene-overlay p {
-  margin: 8px 0 16px;
-  color: var(--cp-text-muted);
-  font-size: 14px;
-}
-
-.scene-overlay button {
-  padding: 8px 12px;
-  border: 1px solid var(--cp-border);
-  border-radius: 0.625rem;
-  background: var(--cp-panel-strong);
-  color: var(--cp-text);
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  pointer-events: auto;
-}
-
-.scene-overlay button:hover {
-  border-color: var(--cp-accent);
-}
-
-.scene-overlay button:focus-visible {
-  outline: 2px solid var(--cp-accent);
-  outline-offset: 4px;
+  background: linear-gradient(180deg, #edf7ff 0%, #e8fbef 100%);
 }
 
 .scene-fallback {
@@ -52,4 +11,122 @@
   padding: 24px;
   place-items: center;
   text-align: center;
+  color: #1b2f21;
+  font-size: 1rem;
+}
+
+.hud {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  pointer-events: none;
+}
+
+.hud-panel {
+  display: flex;
+  min-width: 118px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.26);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 28px rgba(15, 36, 39, 0.08);
+}
+
+.hud-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(27, 38, 43, 0.7);
+}
+
+.hud-panel strong {
+  font-size: 1.2rem;
+  color: #0d1b1d;
+}
+
+.boost-active {
+  color: #0c9d7f;
+}
+
+.compass {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(20, 36, 44, 0.35);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.compass::before,
+.compass::after {
+  position: absolute;
+  content: '';
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+}
+
+.compass::before {
+  width: 30px;
+  height: 2px;
+  background: rgba(20, 36, 44, 0.18);
+}
+
+.compass::after {
+  width: 2px;
+  height: 30px;
+  background: rgba(20, 36, 44, 0.18);
+}
+
+.needle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 18px;
+  transform-origin: 50% 100%;
+  background: linear-gradient(180deg, #ff7c65 0%, #ff5757 100%);
+  border-radius: 99px;
+  box-shadow: 0 0 12px rgba(255, 104, 104, 0.6);
+}
+
+.controls-panel {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 10;
+  padding: 14px 18px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 28px rgba(15, 36, 39, 0.08);
+}
+
+.controls-title {
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(27, 38, 43, 0.7);
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 6px 14px;
+  font-size: 0.7rem;
+  color: rgba(17, 29, 36, 0.8);
+}
+
+.controls-grid span:nth-child(odd) {
+  font-weight: 700;
 }
