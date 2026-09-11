@@ -640,7 +640,7 @@ input {
   color: var(--cp-text-soft);
   font:
     8px Consolas,
-    'Courier New',
+    "Courier New",
     monospace;
 }
 .map-coordinates > i {
@@ -827,7 +827,7 @@ input {
   border-radius: 3px;
 }
 .loading-line::after {
-  content: '';
+  content: "";
   display: block;
   width: 40%;
   height: 100%;
@@ -1079,7 +1079,7 @@ input {
   color: var(--cp-text-soft);
   font-variant-numeric: tabular-nums;
 }
-input[type='range'] {
+input[type="range"] {
   width: 100%;
   height: 4px;
   accent-color: var(--cp-accent);
@@ -1103,7 +1103,7 @@ input[type='range'] {
   color: var(--cp-text-muted);
   font-size: 12px;
 }
-input[role='switch'] {
+input[role="switch"] {
   appearance: none;
   width: 32px;
   height: 18px;
@@ -1114,8 +1114,8 @@ input[role='switch'] {
   transition: background 150ms;
   margin: 0;
 }
-input[role='switch']::after {
-  content: '';
+input[role="switch"]::after {
+  content: "";
   position: absolute;
   width: 12px;
   height: 12px;
@@ -1125,10 +1125,10 @@ input[role='switch']::after {
   border-radius: 50%;
   transition: transform 150ms;
 }
-input[role='switch']:checked {
+input[role="switch"]:checked {
   background: var(--cp-accent);
 }
-input[role='switch']:checked::after {
+input[role="switch"]:checked::after {
   transform: translateX(14px);
 }
 .reset-position-button {
@@ -1749,12 +1749,24 @@ input[role='switch']:checked::after {
   }
   .world-tools {
     top: 16px;
+    flex-direction: row;
   }
   .world-tools .icon-button {
     height: 26px;
   }
   .world-tools .vertical-divider {
     margin: 1px;
+    width: 1px;
+    height: 19px;
+  }
+  .world-tools .tooltip,
+  .world-tools .icon-button:hover .tooltip {
+    top: calc(100% + 10px);
+    right: 0;
+    transform: none;
+  }
+  .heading-compass {
+    display: none;
   }
   .bottom-hud {
     bottom: 14px;
