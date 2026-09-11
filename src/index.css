@@ -53,7 +53,12 @@ html[data-theme="dark"] {
 }
 
 :root {
-  font-family: 'Segoe UI', Aptos, Calibri, -apple-system, BlinkMacSystemFont,
+  font-family:
+    "Segoe UI",
+    Aptos,
+    Calibri,
+    -apple-system,
+    BlinkMacSystemFont,
     sans-serif;
   color: var(--cp-text);
   background: var(--cp-bg);
@@ -65,6 +70,7 @@ html[data-theme="dark"] {
 
 * {
   box-sizing: border-box;
+  letter-spacing: 0;
 }
 
 html,
