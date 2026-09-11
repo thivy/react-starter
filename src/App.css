@@ -1,0 +1,55 @@
+.app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.scene-overlay {
+  position: absolute;
+  top: max(24px, env(safe-area-inset-top));
+  left: max(24px, env(safe-area-inset-left));
+  z-index: 1;
+  max-width: calc(100% - 48px);
+  pointer-events: none;
+}
+
+.scene-overlay h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.scene-overlay p {
+  margin: 8px 0 16px;
+  color: var(--cp-text-muted);
+  font-size: 14px;
+}
+
+.scene-overlay button {
+  padding: 8px 12px;
+  border: 1px solid var(--cp-border);
+  border-radius: 0.625rem;
+  background: var(--cp-panel-strong);
+  color: var(--cp-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.scene-overlay button:hover {
+  border-color: var(--cp-accent);
+}
+
+.scene-overlay button:focus-visible {
+  outline: 2px solid var(--cp-accent);
+  outline-offset: 4px;
+}
+
+.scene-fallback {
+  display: grid;
+  height: 100%;
+  padding: 24px;
+  place-items: center;
+  text-align: center;
+}
