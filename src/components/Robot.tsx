@@ -1,36 +1,36 @@
-import { RoundedBox, useCursor } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { useRef, useState } from "react";
-import type { Group, Mesh, MeshStandardMaterial } from "three";
-import { BoxGeometry, ExtrudeGeometry, LatheGeometry, Matrix4, Shape, Vector2 } from "three";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import type { RobotSimulation } from "../lib/simulation";
-import { WHEEL_CONNECTIONS } from "../lib/simulation";
+import { RoundedBox, useCursor } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { useRef, useState } from 'react'
+import type { Group, Mesh, MeshStandardMaterial } from 'three'
+import { BoxGeometry, ExtrudeGeometry, LatheGeometry, Matrix4, Shape, Vector2 } from 'three'
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
+import type { RobotSimulation } from '../lib/simulation'
+import { WHEEL_CONNECTIONS } from '../lib/simulation'
 
 const finish = {
-  shell: "#edece6",
-  chassis: "#242a29",
-  rubber: "#242826",
-  tread: "#303632",
-  rim: "#545d58",
-  hub: "#373e39",
-  mint: "#7cffe0",
-  seam: "#6e7772",
-};
+  shell: '#edece6',
+  chassis: '#242a29',
+  rubber: '#242826',
+  tread: '#303632',
+  rim: '#545d58',
+  hub: '#373e39',
+  mint: '#7cffe0',
+  seam: '#6e7772',
+}
 
 function roundedPanel(width: number, height: number, radius: number, depth = 0.03) {
-  const shape = new Shape();
-  const left = -width / 2;
-  const bottom = -height / 2;
-  shape.moveTo(left + radius, bottom);
-  shape.lineTo(left + width - radius, bottom);
-  shape.quadraticCurveTo(left + width, bottom, left + width, bottom + radius);
-  shape.lineTo(left + width, bottom + height - radius);
-  shape.quadraticCurveTo(left + width, bottom + height, left + width - radius, bottom + height);
-  shape.lineTo(left + radius, bottom + height);
-  shape.quadraticCurveTo(left, bottom + height, left, bottom + height - radius);
-  shape.lineTo(left, bottom + radius);
-  shape.quadraticCurveTo(left, bottom, left + radius, bottom);
+  const shape = new Shape()
+  const left = -width / 2
+  const bottom = -height / 2
+  shape.moveTo(left + radius, bottom)
+  shape.lineTo(left + width - radius, bottom)
+  shape.quadraticCurveTo(left + width, bottom, left + width, bottom + radius)
+  shape.lineTo(left + width, bottom + height - radius)
+  shape.quadraticCurveTo(left + width, bottom + height, left + width - radius, bottom + height)
+  shape.lineTo(left + radius, bottom + height)
+  shape.quadraticCurveTo(left, bottom + height, left, bottom + height - radius)
+  shape.lineTo(left, bottom + radius)
+  shape.quadraticCurveTo(left, bottom, left + radius, bottom)
   return new ExtrudeGeometry(shape, {
     depth,
     bevelEnabled: true,
@@ -39,22 +39,22 @@ function roundedPanel(width: number, height: number, radius: number, depth = 0.0
     bevelSize: 0.018,
     bevelThickness: 0.012,
     curveSegments: 12,
-  });
+  })
 }
 
 function sidePanel() {
-  const shape = new Shape();
-  shape.moveTo(-1.12, 0.99);
-  shape.bezierCurveTo(-1.3, 0.99, -1.31, 0.8, -1.32, 0.62);
-  shape.lineTo(-1.32, 0.17);
-  shape.bezierCurveTo(-1.14, 0.14, -1.2, 0.4, -0.88, 0.4);
-  shape.bezierCurveTo(-0.52, 0.4, -0.45, 0.16, -0.3, -0.08);
-  shape.quadraticCurveTo(0, -0.22, 0.3, -0.08);
-  shape.bezierCurveTo(0.47, 0.19, 0.57, 0.4, 0.88, 0.4);
-  shape.bezierCurveTo(1.14, 0.4, 1.18, 0.16, 1.31, 0.17);
-  shape.lineTo(1.31, 0.7);
-  shape.quadraticCurveTo(1.3, 0.99, 1.04, 0.99);
-  shape.closePath();
+  const shape = new Shape()
+  shape.moveTo(-1.12, 0.99)
+  shape.bezierCurveTo(-1.3, 0.99, -1.31, 0.8, -1.32, 0.62)
+  shape.lineTo(-1.32, 0.17)
+  shape.bezierCurveTo(-1.14, 0.14, -1.2, 0.4, -0.88, 0.4)
+  shape.bezierCurveTo(-0.52, 0.4, -0.45, 0.16, -0.3, -0.08)
+  shape.quadraticCurveTo(0, -0.22, 0.3, -0.08)
+  shape.bezierCurveTo(0.47, 0.19, 0.57, 0.4, 0.88, 0.4)
+  shape.bezierCurveTo(1.14, 0.4, 1.18, 0.16, 1.31, 0.17)
+  shape.lineTo(1.31, 0.7)
+  shape.quadraticCurveTo(1.3, 0.99, 1.04, 0.99)
+  shape.closePath()
   return new ExtrudeGeometry(shape, {
     depth: 0.025,
     bevelEnabled: true,
@@ -62,7 +62,7 @@ function sidePanel() {
     bevelSize: 0.025,
     bevelThickness: 0.018,
     curveSegments: 18,
-  });
+  })
 }
 
 const tireGeometry = new LatheGeometry(
@@ -80,36 +80,36 @@ const tireGeometry = new LatheGeometry(
     new Vector2(0.2, -0.16),
   ],
   72,
-);
-tireGeometry.rotateZ(Math.PI / 2);
+)
+tireGeometry.rotateZ(Math.PI / 2)
 
 const treadGeometry = mergeGeometries(
   Array.from({ length: 48 }, (_, index) => {
-    const angle = (index / 48) * Math.PI * 2;
+    const angle = (index / 48) * Math.PI * 2
     return new BoxGeometry(0.23, 0.008, 0.011)
       .applyMatrix4(new Matrix4().makeRotationX(angle))
-      .translate(0, Math.cos(angle) * 0.489, Math.sin(angle) * 0.489);
+      .translate(0, Math.cos(angle) * 0.489, Math.sin(angle) * 0.489)
   }),
-);
+)
 
 type ButtonProps = {
-  position: [number, number, number];
-  radius: number;
-  onClick: () => void;
-  power?: boolean;
-  illuminated?: boolean;
-};
+  position: [number, number, number]
+  radius: number
+  onClick: () => void
+  power?: boolean
+  illuminated?: boolean
+}
 
 function FaceButton({ position, radius, onClick, power, illuminated }: ButtonProps) {
-  const [hovered, setHovered] = useState(false);
-  const [pressed, setPressed] = useState(false);
-  const button = useRef<Group>(null);
-  useCursor(hovered);
+  const [hovered, setHovered] = useState(false)
+  const [pressed, setPressed] = useState(false)
+  const button = useRef<Group>(null)
+  useCursor(hovered)
   useFrame((_, delta) => {
     if (button.current)
       button.current.position.z +=
-        ((pressed ? -0.032 : 0) - button.current.position.z) * Math.min(1, delta * 22);
-  });
+        ((pressed ? -0.032 : 0) - button.current.position.z) * Math.min(1, delta * 22)
+  })
   return (
     <group position={position}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
@@ -118,32 +118,32 @@ function FaceButton({ position, radius, onClick, power, illuminated }: ButtonPro
       </mesh>
       <group ref={button}>
         <mesh
-          name={power ? "milo-power-button" : "milo-scan-button"}
+          name={power ? 'milo-power-button' : 'milo-scan-button'}
           rotation={[Math.PI / 2, 0, 0]}
           onPointerOver={(event) => {
-            event.stopPropagation();
-            setHovered(true);
+            event.stopPropagation()
+            setHovered(true)
           }}
           onPointerOut={() => {
-            setHovered(false);
-            setPressed(false);
+            setHovered(false)
+            setPressed(false)
           }}
           onPointerDown={(event) => {
-            event.stopPropagation();
-            setPressed(true);
+            event.stopPropagation()
+            setPressed(true)
           }}
           onPointerUp={(event) => {
-            event.stopPropagation();
-            setPressed(false);
+            event.stopPropagation()
+            setPressed(false)
           }}
           onClick={(event) => {
-            event.stopPropagation();
-            onClick();
+            event.stopPropagation()
+            onClick()
           }}
         >
           <cylinderGeometry args={[radius, radius, 0.045, 48]} />
           <meshPhysicalMaterial
-            color={hovered ? "#59655f" : "#363e38"}
+            color={hovered ? '#59655f' : '#363e38'}
             roughness={0.36}
             metalness={0.3}
             clearcoat={0.5}
@@ -154,14 +154,14 @@ function FaceButton({ position, radius, onClick, power, illuminated }: ButtonPro
             <mesh rotation={[0, 0, Math.PI / 2 + 0.5]}>
               <torusGeometry args={[0.033, 0.0055, 8, 30, Math.PI * 2 - 1]} />
               <meshStandardMaterial
-                color={illuminated ? "#eafff8" : "#718078"}
+                color={illuminated ? '#eafff8' : '#718078'}
                 emissive={finish.mint}
                 emissiveIntensity={illuminated ? 0.7 : 0}
               />
             </mesh>
             <mesh position={[0, 0.026, 0]}>
               <boxGeometry args={[0.009, 0.045, 0.004]} />
-              <meshBasicMaterial color={illuminated ? "#eafff8" : "#718078"} />
+              <meshBasicMaterial color={illuminated ? '#eafff8' : '#718078'} />
             </mesh>
           </group>
         ) : (
@@ -172,7 +172,7 @@ function FaceButton({ position, radius, onClick, power, illuminated }: ButtonPro
         )}
       </group>
     </group>
-  );
+  )
 }
 
 function Wheel({ side, illuminated }: { side: number; illuminated: boolean }) {
@@ -195,7 +195,7 @@ function Wheel({ side, illuminated }: { side: number; illuminated: boolean }) {
       </mesh>
       <mesh position={[side * 0.174, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
         <torusGeometry args={[0.398, 0.012, 10, 80]} />
-        <meshBasicMaterial color={illuminated ? "#73edc6" : "#54665c"} toneMapped={false} />
+        <meshBasicMaterial color={illuminated ? '#73edc6' : '#54665c'} toneMapped={false} />
       </mesh>
       <mesh position={[side * 0.166, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
         <torusGeometry args={[0.434, 0.009, 8, 72]} />
@@ -219,18 +219,18 @@ function Wheel({ side, illuminated }: { side: number; illuminated: boolean }) {
         <meshStandardMaterial color="#353d38" metalness={0.8} roughness={0.35} />
       </mesh>
     </>
-  );
+  )
 }
 
 export type RobotProps = {
-  simulation: RobotSimulation | null;
-  powered: boolean;
-  lights: boolean;
-  hatchOpen: boolean;
-  onPower: () => void;
-  onScan: () => void;
-  onHatch: () => void;
-};
+  simulation: RobotSimulation | null
+  powered: boolean
+  lights: boolean
+  hatchOpen: boolean
+  onPower: () => void
+  onScan: () => void
+  onHatch: () => void
+}
 
 export default function Robot({
   simulation,
@@ -241,13 +241,13 @@ export default function Robot({
   onScan,
   onHatch,
 }: RobotProps) {
-  const root = useRef<Group>(null);
-  const shell = useRef<Group>(null);
-  const hatch = useRef<Group>(null);
-  const wheels = useRef<(Group | null)[]>([]);
-  const spins = useRef<(Group | null)[]>([]);
-  const indicator = useRef<Mesh>(null);
-  const brakeLight = useRef<MeshStandardMaterial>(null);
+  const root = useRef<Group>(null)
+  const shell = useRef<Group>(null)
+  const hatch = useRef<Group>(null)
+  const wheels = useRef<(Group | null)[]>([])
+  const spins = useRef<(Group | null)[]>([])
+  const indicator = useRef<Mesh>(null)
+  const brakeLight = useRef<MeshStandardMaterial>(null)
   const [geometry] = useState(() => ({
     front: roundedPanel(1.57, 1.13, 0.33, 0.035),
     frontSeam: roundedPanel(1.64, 1.19, 0.35, 0.03),
@@ -257,38 +257,38 @@ export default function Robot({
     hatch: roundedPanel(1.39, 0.65, 0.14, 0.035),
     service: roundedPanel(1.23, 1.74, 0.17, 0.02),
     side: sidePanel(),
-  }));
-  const illuminated = powered && lights;
+  }))
+  const illuminated = powered && lights
 
   useFrame(({ clock }, delta) => {
-    if (!simulation || !root.current) return;
-    root.current.position.copy(simulation.position);
-    root.current.quaternion.copy(simulation.rotation);
-    const time = clock.elapsedTime;
+    if (!simulation || !root.current) return
+    root.current.position.copy(simulation.position)
+    root.current.quaternion.copy(simulation.rotation)
+    const time = clock.elapsedTime
     if (shell.current)
       shell.current.position.y = powered
         ? (Math.sin(time * 1.7) * 0.004) / (1 + Math.abs(simulation.telemetry.speed))
-        : 0;
+        : 0
     for (let index = 0; index < 4; index++) {
-      const wheel = wheels.current[index];
-      const spin = spins.current[index];
+      const wheel = wheels.current[index]
+      const spin = spins.current[index]
       if (wheel) {
-        wheel.position.y = WHEEL_CONNECTIONS[index].y - simulation.wheelSuspension[index];
-        wheel.rotation.y = simulation.wheelSteering[index];
+        wheel.position.y = WHEEL_CONNECTIONS[index].y - simulation.wheelSuspension[index]
+        wheel.rotation.y = simulation.wheelSteering[index]
       }
-      if (spin) spin.rotation.x = simulation.wheelRotation[index];
+      if (spin) spin.rotation.x = simulation.wheelRotation[index]
     }
     if (hatch.current)
       hatch.current.rotation.x +=
-        ((hatchOpen ? -1.35 : 0) - hatch.current.rotation.x) * Math.min(1, delta * 7);
-    if (indicator.current) indicator.current.visible = powered && Math.sin(time * 2.5) > -0.8;
+        ((hatchOpen ? -1.35 : 0) - hatch.current.rotation.x) * Math.min(1, delta * 7)
+    if (indicator.current) indicator.current.visible = powered && Math.sin(time * 2.5) > -0.8
     if (brakeLight.current)
       brakeLight.current.emissiveIntensity = illuminated
         ? simulation.throttle < 0.05 && Math.abs(simulation.telemetry.speed) > 0.3
           ? 5
           : 2.2
-        : 0;
-  });
+        : 0
+  })
 
   return (
     <group ref={root} name="milo" position={[0, 0.8, 0]}>
@@ -416,11 +416,11 @@ export default function Robot({
           </mesh>
         </group>
         {Array.from({ length: 23 }, (_, index) => {
-          const offset = (index - 11) * 0.079;
-          const start = Math.max(-0.282, -0.713 - offset);
-          const end = Math.min(0.282, 0.713 - offset);
-          if (end <= start) return null;
-          const center = (start + end) / 2;
+          const offset = (index - 11) * 0.079
+          const start = Math.max(-0.282, -0.713 - offset)
+          const end = Math.min(0.282, 0.713 - offset)
+          if (end <= start) return null
+          const center = (start + end) / 2
           return (
             <mesh
               key={index}
@@ -430,7 +430,7 @@ export default function Robot({
               <boxGeometry args={[(end - start) * Math.SQRT2, 0.015, 0.032]} />
               <meshStandardMaterial color="#0e1712" roughness={0.95} />
             </mesh>
-          );
+          )
         })}
 
         <RoundedBox args={[1.58, 0.16, 0.06]} radius={0.028} position={[0, 0.45, -1.323]}>
@@ -461,14 +461,14 @@ export default function Robot({
             name="milo-service-latch"
             position={[0, 0.52, -0.052]}
             onClick={(event) => {
-              event.stopPropagation();
-              onHatch();
+              event.stopPropagation()
+              onHatch()
             }}
             onPointerOver={() => {
-              document.body.style.cursor = "pointer";
+              document.body.style.cursor = 'pointer'
             }}
             onPointerOut={() => {
-              document.body.style.cursor = "auto";
+              document.body.style.cursor = 'auto'
             }}
           >
             <boxGeometry args={[0.22, 0.068, 0.035]} />
@@ -505,13 +505,13 @@ export default function Robot({
           key={index}
           name={`milo-wheel-${index}`}
           ref={(value) => {
-            wheels.current[index] = value;
+            wheels.current[index] = value
           }}
           position={[connection.x, -0.25, connection.z]}
         >
           <group
             ref={(value) => {
-              spins.current[index] = value;
+              spins.current[index] = value
             }}
           >
             <Wheel side={Math.sign(connection.x)} illuminated={illuminated} />
@@ -533,5 +533,5 @@ export default function Robot({
         </group>
       ))}
     </group>
-  );
+  )
 }

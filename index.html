@@ -11,16 +11,16 @@
     <meta name="theme-color" content="#fcfbf8" />
     <title>Milo - A Little World</title>
     <script>
-      (() => {
-        const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+      ;(() => {
+        const param = new URLSearchParams(window.location.search).get('clawpilotTheme')
         const theme =
-          param === "light" || param === "dark"
+          param === 'light' || param === 'dark'
             ? param
-            : window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light";
-        document.documentElement.setAttribute("data-theme", theme);
-      })();
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light'
+        document.documentElement.setAttribute('data-theme', theme)
+      })()
     </script>
   </head>
   <body>

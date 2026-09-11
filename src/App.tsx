@@ -1,4 +1,4 @@
-import { Canvas } from "@react-three/fiber";
+import { Canvas } from '@react-three/fiber'
 import {
   ArrowDown,
   ArrowLeft,
@@ -39,23 +39,23 @@ import {
   Wrench,
   X,
   Zap,
-} from "lucide-react";
-import type { ReactNode, PointerEvent as ReactPointerEvent } from "react";
-import { Component, Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { ACESFilmicToneMapping, PCFShadowMap } from "three";
-import "./App.css";
-import type { SceneApi } from "./components/Scene";
-import Scene from "./components/Scene";
-import type { DriveInput, Telemetry } from "./lib/simulation";
-import { EMPTY_INPUT, EMPTY_TELEMETRY } from "./lib/simulation";
-import { groundHeight, landmarks, pathDistance, WORLD_SIZE, worldObjects } from "./lib/world";
+} from 'lucide-react'
+import type { ReactNode, PointerEvent as ReactPointerEvent } from 'react'
+import { Component, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { ACESFilmicToneMapping, PCFShadowMap } from 'three'
+import './App.css'
+import type { SceneApi } from './components/Scene'
+import Scene from './components/Scene'
+import type { DriveInput, Telemetry } from './lib/simulation'
+import { EMPTY_INPUT, EMPTY_TELEMETRY } from './lib/simulation'
+import { groundHeight, landmarks, pathDistance, WORLD_SIZE, worldObjects } from './lib/world'
 
-type Panel = "journal" | "settings" | "robot" | "map" | null;
+type Panel = 'journal' | 'settings' | 'robot' | 'map' | null
 
 class SceneBoundary extends Component<{ children: ReactNode }, { error: boolean }> {
-  state = { error: false };
+  state = { error: false }
   static getDerivedStateFromError() {
-    return { error: true };
+    return { error: true }
   }
   render() {
     return this.state.error ? (
@@ -67,7 +67,7 @@ class SceneBoundary extends Component<{ children: ReactNode }, { error: boolean 
       </div>
     ) : (
       this.props.children
-    );
+    )
   }
 }
 
@@ -76,19 +76,19 @@ function IconButton({
   children,
   onClick,
   active,
-  className = "",
+  className = '',
   disabled = false,
 }: {
-  label: string;
-  children: ReactNode;
-  onClick: () => void;
-  active?: boolean;
-  className?: string;
-  disabled?: boolean;
+  label: string
+  children: ReactNode
+  onClick: () => void
+  active?: boolean
+  className?: string
+  disabled?: boolean
 }) {
   return (
     <button
-      className={`icon-button ${active ? "is-active" : ""} ${className}`}
+      className={`icon-button ${active ? 'is-active' : ''} ${className}`}
       type="button"
       onClick={onClick}
       aria-label={label}
@@ -100,43 +100,43 @@ function IconButton({
         {label}
       </span>
     </button>
-  );
+  )
 }
 
 function createMapTexture() {
-  const canvas = document.createElement("canvas");
-  canvas.width = 440;
-  canvas.height = 440;
-  const context = canvas.getContext("2d")!;
-  const image = context.createImageData(440, 440);
+  const canvas = document.createElement('canvas')
+  canvas.width = 440
+  canvas.height = 440
+  const context = canvas.getContext('2d')!
+  const image = context.createImageData(440, 440)
   for (let row = 0; row < 440; row++) {
     for (let column = 0; column < 440; column++) {
-      const x = (column / 440) * WORLD_SIZE - WORLD_SIZE / 2;
-      const z = (row / 440) * WORLD_SIZE - WORLD_SIZE / 2;
-      const height = groundHeight(x, z);
-      const shade = Math.max(-10, Math.min(12, height * 3));
-      const path = pathDistance(x, z) < 3;
-      const index = (row * 440 + column) * 4;
-      image.data[index] = (path ? 220 : 166) + shade;
-      image.data[index + 1] = (path ? 215 : 185) + shade;
-      image.data[index + 2] = (path ? 181 : 138) + shade;
-      image.data[index + 3] = 255;
+      const x = (column / 440) * WORLD_SIZE - WORLD_SIZE / 2
+      const z = (row / 440) * WORLD_SIZE - WORLD_SIZE / 2
+      const height = groundHeight(x, z)
+      const shade = Math.max(-10, Math.min(12, height * 3))
+      const path = pathDistance(x, z) < 3
+      const index = (row * 440 + column) * 4
+      image.data[index] = (path ? 220 : 166) + shade
+      image.data[index + 1] = (path ? 215 : 185) + shade
+      image.data[index + 2] = (path ? 181 : 138) + shade
+      image.data[index + 3] = 255
     }
   }
-  context.putImageData(image, 0, 0);
-  for (const object of worldObjects.filter((object) => object.kind === "tree")) {
-    context.fillStyle = "#78966e";
-    context.beginPath();
+  context.putImageData(image, 0, 0)
+  for (const object of worldObjects.filter((object) => object.kind === 'tree')) {
+    context.fillStyle = '#78966e'
+    context.beginPath()
     context.arc(
       (object.x / WORLD_SIZE + 0.5) * 440,
       (object.z / WORLD_SIZE + 0.5) * 440,
       object.scale * 3.7,
       0,
       Math.PI * 2,
-    );
-    context.fill();
+    )
+    context.fill()
   }
-  return canvas;
+  return canvas
 }
 
 function Minimap({
@@ -145,82 +145,80 @@ function Minimap({
   waypoint,
   expanded = false,
 }: {
-  telemetry: Telemetry;
-  discovered: string[];
-  waypoint: string | null;
-  expanded?: boolean;
+  telemetry: Telemetry
+  discovered: string[]
+  waypoint: string | null
+  expanded?: boolean
 }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const [texture] = useState(createMapTexture);
+  const canvas = useRef<HTMLCanvasElement>(null)
+  const [texture] = useState(createMapTexture)
   useEffect(() => {
-    const context = canvas.current?.getContext("2d");
-    if (!context || !canvas.current) return;
-    const size = canvas.current.width;
-    const span = expanded ? 160 : 74;
-    const centerX = expanded ? 0 : telemetry.x;
-    const centerZ = expanded ? -18 : telemetry.z;
-    const sourceSize = (span / WORLD_SIZE) * 440;
-    const sourceX = (centerX / WORLD_SIZE + 0.5) * 440 - sourceSize / 2;
-    const sourceZ = (centerZ / WORLD_SIZE + 0.5) * 440 - sourceSize / 2;
-    context.fillStyle = "#a1b58b";
-    context.fillRect(0, 0, size, size);
-    context.drawImage(texture, sourceX, sourceZ, sourceSize, sourceSize, 0, 0, size, size);
+    const context = canvas.current?.getContext('2d')
+    if (!context || !canvas.current) return
+    const size = canvas.current.width
+    const span = expanded ? 160 : 74
+    const centerX = expanded ? 0 : telemetry.x
+    const centerZ = expanded ? -18 : telemetry.z
+    const sourceSize = (span / WORLD_SIZE) * 440
+    const sourceX = (centerX / WORLD_SIZE + 0.5) * 440 - sourceSize / 2
+    const sourceZ = (centerZ / WORLD_SIZE + 0.5) * 440 - sourceSize / 2
+    context.fillStyle = '#a1b58b'
+    context.fillRect(0, 0, size, size)
+    context.drawImage(texture, sourceX, sourceZ, sourceSize, sourceSize, 0, 0, size, size)
     const project = (x: number, z: number) => [
       ((x - centerX) / span) * size + size / 2,
       ((z - centerZ) / span) * size + size / 2,
-    ];
-    const accent = getComputedStyle(document.documentElement)
-      .getPropertyValue("--cp-accent")
-      .trim();
+    ]
+    const accent = getComputedStyle(document.documentElement).getPropertyValue('--cp-accent').trim()
     for (const landmark of landmarks) {
-      const [x, y] = project(landmark.x, landmark.z);
-      if (x < 0 || y < 0 || x > size || y > size) continue;
+      const [x, y] = project(landmark.x, landmark.z)
+      if (x < 0 || y < 0 || x > size || y > size) continue
       if (waypoint === landmark.id) {
-        const [robotX, robotY] = project(telemetry.x, telemetry.z);
-        context.beginPath();
-        context.setLineDash([5, 6]);
-        context.moveTo(robotX, robotY);
-        context.lineTo(x, y);
-        context.strokeStyle = accent;
-        context.lineWidth = 2;
-        context.stroke();
-        context.setLineDash([]);
+        const [robotX, robotY] = project(telemetry.x, telemetry.z)
+        context.beginPath()
+        context.setLineDash([5, 6])
+        context.moveTo(robotX, robotY)
+        context.lineTo(x, y)
+        context.strokeStyle = accent
+        context.lineWidth = 2
+        context.stroke()
+        context.setLineDash([])
       }
-      context.beginPath();
-      context.arc(x, y, expanded ? 8 : 7, 0, Math.PI * 2);
-      context.fillStyle = discovered.includes(landmark.id) ? accent : "#f6f4df";
-      context.fill();
-      context.strokeStyle = "#6e8462";
-      context.lineWidth = 2;
-      context.stroke();
+      context.beginPath()
+      context.arc(x, y, expanded ? 8 : 7, 0, Math.PI * 2)
+      context.fillStyle = discovered.includes(landmark.id) ? accent : '#f6f4df'
+      context.fill()
+      context.strokeStyle = '#6e8462'
+      context.lineWidth = 2
+      context.stroke()
       if (expanded) {
-        context.fillStyle = "#334730";
-        context.font = '500 13px "Segoe UI"';
-        context.textAlign = "center";
-        context.fillText(landmark.name, x, y + 25);
+        context.fillStyle = '#334730'
+        context.font = '500 13px "Segoe UI"'
+        context.textAlign = 'center'
+        context.fillText(landmark.name, x, y + 25)
       }
     }
-    const [robotX, robotY] = project(telemetry.x, telemetry.z);
-    context.save();
-    context.translate(robotX, robotY);
-    context.rotate(-telemetry.heading + Math.PI);
-    context.beginPath();
-    context.arc(0, 0, 17, 0, Math.PI * 2);
-    context.fillStyle = "#ffffff75";
-    context.fill();
-    context.beginPath();
-    context.moveTo(0, -12);
-    context.lineTo(8, 9);
-    context.lineTo(0, 5);
-    context.lineTo(-8, 9);
-    context.closePath();
-    context.fillStyle = "#344b3a";
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2.5;
-    context.fill();
-    context.stroke();
-    context.restore();
-  }, [telemetry.x, telemetry.z, telemetry.heading, discovered, texture, waypoint, expanded]);
+    const [robotX, robotY] = project(telemetry.x, telemetry.z)
+    context.save()
+    context.translate(robotX, robotY)
+    context.rotate(-telemetry.heading + Math.PI)
+    context.beginPath()
+    context.arc(0, 0, 17, 0, Math.PI * 2)
+    context.fillStyle = '#ffffff75'
+    context.fill()
+    context.beginPath()
+    context.moveTo(0, -12)
+    context.lineTo(8, 9)
+    context.lineTo(0, 5)
+    context.lineTo(-8, 9)
+    context.closePath()
+    context.fillStyle = '#344b3a'
+    context.strokeStyle = '#ffffff'
+    context.lineWidth = 2.5
+    context.fill()
+    context.stroke()
+    context.restore()
+  }, [telemetry.x, telemetry.z, telemetry.heading, discovered, texture, waypoint, expanded])
   return (
     <canvas
       ref={canvas}
@@ -228,18 +226,18 @@ function Minimap({
       height={expanded ? 660 : 320}
       aria-label={
         expanded
-          ? "Map of Sunpetal Meadow with your position and four landmarks"
-          : "Live north-up minimap"
+          ? 'Map of Sunpetal Meadow with your position and four landmarks'
+          : 'Live north-up minimap'
       }
       role="img"
       className="map-canvas"
     />
-  );
+  )
 }
 
 function HeadingCompass({ heading }: { heading: number }) {
-  const bearing = (180 - (heading * 180) / Math.PI + 360) % 360;
-  const direction = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(bearing / 45) % 8];
+  const bearing = (180 - (heading * 180) / Math.PI + 360) % 360
+  const direction = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(bearing / 45) % 8]
   return (
     <div
       className="heading-compass"
@@ -248,30 +246,30 @@ function HeadingCompass({ heading }: { heading: number }) {
       <div className="compass-needle" />
       <div className="compass-track">
         {Array.from({ length: 15 }, (_, index) => {
-          const degree = Math.floor(bearing / 15) * 15 + (index - 7) * 15;
-          const normalized = (degree + 720) % 360;
+          const degree = Math.floor(bearing / 15) * 15 + (index - 7) * 15
+          const normalized = (degree + 720) % 360
           const label =
             normalized % 90 === 0
-              ? ["N", "E", "S", "W"][normalized / 90]
+              ? ['N', 'E', 'S', 'W'][normalized / 90]
               : normalized % 45 === 0
                 ? `${normalized}`
-                : "";
+                : ''
           return (
             <span
               key={index}
-              className={`compass-tick ${label ? "major" : ""}`}
+              className={`compass-tick ${label ? 'major' : ''}`}
               style={{ left: `calc(50% + ${(degree - bearing) * 2.2}px)` }}
             >
               {label && <span>{label}</span>}
             </span>
-          );
+          )
         })}
       </div>
       <span className="compass-value">
-        {String(Math.round(bearing)).padStart(3, "0")}&deg; <b>{direction}</b>
+        {String(Math.round(bearing)).padStart(3, '0')}&deg; <b>{direction}</b>
       </span>
     </div>
-  );
+  )
 }
 
 function Speedometer({
@@ -279,15 +277,15 @@ function Speedometer({
   powered,
   onRobot,
 }: {
-  telemetry: Telemetry;
-  powered: boolean;
-  onRobot: () => void;
+  telemetry: Telemetry
+  powered: boolean
+  onRobot: () => void
 }) {
-  const speed = Math.abs(telemetry.speed) * 3.6;
+  const speed = Math.abs(telemetry.speed) * 3.6
   return (
     <section className="telemetry-panel" aria-label="Vehicle telemetry">
       <button className="robot-label" onClick={onRobot}>
-        <span className={`status-dot ${!powered ? "offline" : ""}`} /> MILO-01{" "}
+        <span className={`status-dot ${!powered ? 'offline' : ''}`} /> MILO-01{' '}
         <ChevronRight size={12} />
       </button>
       <div className="instrument-row">
@@ -303,7 +301,7 @@ function Speedometer({
             />
           </svg>
           <output className="speed-number" data-testid="speed">
-            {String(Math.floor(speed)).padStart(2, "0")}
+            {String(Math.floor(speed)).padStart(2, '0')}
           </output>
           <span className="speed-unit">km/h</span>
         </div>
@@ -312,15 +310,15 @@ function Speedometer({
             <span className="gear">{telemetry.gear}</span>
             <span>
               {!powered
-                ? "Powered off"
-                : telemetry.gear === "P"
-                  ? "At ease"
-                  : telemetry.gear === "R"
-                    ? "Reversing"
-                    : "On the move"}
+                ? 'Powered off'
+                : telemetry.gear === 'P'
+                  ? 'At ease'
+                  : telemetry.gear === 'R'
+                    ? 'Reversing'
+                    : 'On the move'}
             </span>
           </div>
-          <div className={`boost-readout ${telemetry.boosting ? "boosting" : ""}`}>
+          <div className={`boost-readout ${telemetry.boosting ? 'boosting' : ''}`}>
             <span>
               <Zap size={11} /> BOOST
             </span>
@@ -332,17 +330,17 @@ function Speedometer({
           <div className="ground-contact">
             <span className="contact-dots" aria-label={`${telemetry.contact} wheels in contact`}>
               {[0, 1, 2, 3].map((index) => (
-                <i key={index} className={index < telemetry.contact ? "in-contact" : ""} />
+                <i key={index} className={index < telemetry.contact ? 'in-contact' : ''} />
               ))}
             </span>
             <span>
-              {telemetry.contact === 4 ? "All-terrain ready" : `${telemetry.contact}/4 in contact`}
+              {telemetry.contact === 4 ? 'All-terrain ready' : `${telemetry.contact}/4 in contact`}
             </span>
           </div>
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function DriveButton({
@@ -353,19 +351,19 @@ function DriveButton({
   onInput,
   disabled = false,
 }: {
-  label: string;
-  children: ReactNode;
-  field: keyof DriveInput;
-  value: number | boolean;
-  onInput: (field: keyof DriveInput, value: number | boolean) => void;
-  disabled?: boolean;
+  label: string
+  children: ReactNode
+  field: keyof DriveInput
+  value: number | boolean
+  onInput: (field: keyof DriveInput, value: number | boolean) => void
+  disabled?: boolean
 }) {
-  const release = () => onInput(field, field === "throttle" || field === "steer" ? 0 : false);
+  const release = () => onInput(field, field === 'throttle' || field === 'steer' ? 0 : false)
   const press = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    onInput(field, value);
-  };
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    onInput(field, value)
+  }
   return (
     <button
       className={`drive-button drive-${field}`}
@@ -377,207 +375,207 @@ function DriveButton({
       onPointerCancel={release}
       onLostPointerCapture={release}
       onKeyDown={(event) => {
-        if (event.code !== "Enter" && event.code !== "Space") return;
-        event.preventDefault();
-        onInput(field, value);
+        if (event.code !== 'Enter' && event.code !== 'Space') return
+        event.preventDefault()
+        onInput(field, value)
       }}
       onKeyUp={release}
       onBlur={release}
     >
       {children}
     </button>
-  );
+  )
 }
 
 function App() {
-  const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [telemetry, setTelemetry] = useState<Telemetry>({ ...EMPTY_TELEMETRY });
-  const [panel, setPanel] = useState<Panel>(null);
-  const [powered, setPowered] = useState(true);
-  const [lights, setLights] = useState(true);
-  const [hatchOpen, setHatchOpen] = useState(false);
-  const [scan, setScan] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [evening, setEvening] = useState(false);
-  const [sound, setSound] = useState(false);
-  const [cameraMode, setCameraMode] = useState<"follow" | "orbit">("follow");
-  const [quality, setQuality] = useState<"balanced" | "high">("high");
-  const [zoom, setZoom] = useState(8.8);
-  const [toast, setToast] = useState<string | null>(null);
-  const [waypoint, setWaypoint] = useState<string | null>(null);
+  const [ready, setReady] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [telemetry, setTelemetry] = useState<Telemetry>({ ...EMPTY_TELEMETRY })
+  const [panel, setPanel] = useState<Panel>(null)
+  const [powered, setPowered] = useState(true)
+  const [lights, setLights] = useState(true)
+  const [hatchOpen, setHatchOpen] = useState(false)
+  const [scan, setScan] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [evening, setEvening] = useState(false)
+  const [sound, setSound] = useState(false)
+  const [cameraMode, setCameraMode] = useState<'follow' | 'orbit'>('follow')
+  const [quality, setQuality] = useState<'balanced' | 'high'>('high')
+  const [zoom, setZoom] = useState(8.8)
+  const [toast, setToast] = useState<string | null>(null)
+  const [waypoint, setWaypoint] = useState<string | null>(null)
   const [discovered, setDiscovered] = useState<string[]>(() => {
     try {
-      const saved: unknown = JSON.parse(localStorage.getItem("milo-discoveries") ?? "[]");
+      const saved: unknown = JSON.parse(localStorage.getItem('milo-discoveries') ?? '[]')
       return Array.isArray(saved)
         ? saved.filter(
             (id): id is string =>
-              typeof id === "string" && landmarks.some((landmark) => landmark.id === id),
+              typeof id === 'string' && landmarks.some((landmark) => landmark.id === id),
           )
-        : [];
+        : []
     } catch {
-      return [];
+      return []
     }
-  });
-  const input = useRef<DriveInput>({ ...EMPTY_INPUT });
+  })
+  const input = useRef<DriveInput>({ ...EMPTY_INPUT })
   const clearDriveInput = useCallback(() => {
-    input.current = { ...EMPTY_INPUT };
-  }, []);
+    input.current = { ...EMPTY_INPUT }
+  }, [])
   const updateDriveInput = useCallback((field: keyof DriveInput, value: number | boolean) => {
-    if (field === "throttle" || field === "steer") input.current[field] = Number(value);
-    else input.current[field] = Boolean(value);
-  }, []);
-  const scene = useRef<SceneApi | null>(null);
-  const app = useRef<HTMLDivElement>(null);
-  const dialog = useRef<HTMLElement>(null);
+    if (field === 'throttle' || field === 'steer') input.current[field] = Number(value)
+    else input.current[field] = Boolean(value)
+  }, [])
+  const scene = useRef<SceneApi | null>(null)
+  const app = useRef<HTMLDivElement>(null)
+  const dialog = useRef<HTMLElement>(null)
   const motor = useRef<{ frequency: AudioParam; gain: AudioParam; context: AudioContext } | null>(
     null,
-  );
-  const selectedLandmark = landmarks.find((landmark) => landmark.id === waypoint);
+  )
+  const selectedLandmark = landmarks.find((landmark) => landmark.id === waypoint)
 
   useEffect(() => {
-    if (!toast) return;
-    const timer = window.setTimeout(() => setToast(null), 4200);
-    return () => window.clearTimeout(timer);
-  }, [toast]);
+    if (!toast) return
+    const timer = window.setTimeout(() => setToast(null), 4200)
+    return () => window.clearTimeout(timer)
+  }, [toast])
 
   useEffect(() => {
-    if (!sound) return;
-    let context: AudioContext | undefined;
-    let cancelled = false;
+    if (!sound) return
+    let context: AudioContext | undefined
+    let cancelled = false
     void Promise.resolve()
       .then(async () => {
-        if (cancelled) return;
-        const current = new AudioContext();
-        context = current;
-        const buffer = current.createBuffer(1, current.sampleRate * 3, current.sampleRate);
-        const channel = buffer.getChannelData(0);
+        if (cancelled) return
+        const current = new AudioContext()
+        context = current
+        const buffer = current.createBuffer(1, current.sampleRate * 3, current.sampleRate)
+        const channel = buffer.getChannelData(0)
         for (let index = 0; index < channel.length; index++)
-          channel[index] = (Math.random() * 2 - 1) * 0.1;
-        const wind = current.createBufferSource();
-        wind.buffer = buffer;
-        wind.loop = true;
-        const filter = current.createBiquadFilter();
-        filter.type = "lowpass";
-        filter.frequency.value = 550;
-        const ambient = current.createGain();
-        ambient.gain.value = 0.28;
-        wind.connect(filter).connect(ambient).connect(current.destination);
-        wind.start();
-        const oscillator = current.createOscillator();
-        oscillator.type = "sine";
-        oscillator.frequency.value = 75;
-        const gain = current.createGain();
-        gain.gain.value = 0.003;
-        oscillator.connect(gain).connect(current.destination);
-        oscillator.start();
-        motor.current = { frequency: oscillator.frequency, gain: gain.gain, context: current };
-        await current.resume();
+          channel[index] = (Math.random() * 2 - 1) * 0.1
+        const wind = current.createBufferSource()
+        wind.buffer = buffer
+        wind.loop = true
+        const filter = current.createBiquadFilter()
+        filter.type = 'lowpass'
+        filter.frequency.value = 550
+        const ambient = current.createGain()
+        ambient.gain.value = 0.28
+        wind.connect(filter).connect(ambient).connect(current.destination)
+        wind.start()
+        const oscillator = current.createOscillator()
+        oscillator.type = 'sine'
+        oscillator.frequency.value = 75
+        const gain = current.createGain()
+        gain.gain.value = 0.003
+        oscillator.connect(gain).connect(current.destination)
+        oscillator.start()
+        motor.current = { frequency: oscillator.frequency, gain: gain.gain, context: current }
+        await current.resume()
       })
       .catch(() => {
         if (!cancelled) {
-          setToast("Audio could not start.");
-          setSound(false);
+          setToast('Audio could not start.')
+          setSound(false)
         }
-      });
+      })
     return () => {
-      cancelled = true;
-      motor.current = null;
-      void context?.close().catch(() => {});
-    };
-  }, [sound]);
+      cancelled = true
+      motor.current = null
+      void context?.close().catch(() => {})
+    }
+  }, [sound])
 
   useEffect(() => {
-    if (!motor.current) return;
-    const { frequency, gain, context } = motor.current;
-    frequency.setTargetAtTime(75 + Math.abs(telemetry.speed) * 31, context.currentTime, 0.15);
+    if (!motor.current) return
+    const { frequency, gain, context } = motor.current
+    frequency.setTargetAtTime(75 + Math.abs(telemetry.speed) * 31, context.currentTime, 0.15)
     gain.setTargetAtTime(
       powered ? 0.002 + Math.abs(telemetry.speed) * 0.0015 : 0,
       context.currentTime,
       0.2,
-    );
-  }, [telemetry.speed, powered]);
+    )
+  }, [telemetry.speed, powered])
 
   useEffect(() => {
-    if (!panel) return;
-    const previous = document.activeElement as HTMLElement | null;
-    dialog.current?.focus();
+    if (!panel) return
+    const previous = document.activeElement as HTMLElement | null
+    dialog.current?.focus()
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setPanel(null);
-        return;
+      if (event.key === 'Escape') {
+        setPanel(null)
+        return
       }
-      if (event.key !== "Tab" || !dialog.current) return;
+      if (event.key !== 'Tab' || !dialog.current) return
       const focusable = [
         ...dialog.current.querySelectorAll<HTMLElement>(
           'button:not(:disabled), input, [tabindex="0"]',
         ),
-      ];
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      ]
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
       if (
         event.shiftKey &&
         (document.activeElement === first || document.activeElement === dialog.current)
       ) {
-        event.preventDefault();
-        last?.focus();
+        event.preventDefault()
+        last?.focus()
       }
       if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first?.focus();
+        event.preventDefault()
+        first?.focus()
       }
-    };
-    window.addEventListener("keydown", handleKey);
+    }
+    window.addEventListener('keydown', handleKey)
     return () => {
-      window.removeEventListener("keydown", handleKey);
-      previous?.focus();
-    };
-  }, [panel]);
+      window.removeEventListener('keydown', handleKey)
+      previous?.focus()
+    }
+  }, [panel])
 
   const discover = (id: string) => {
     setDiscovered((previous) => {
-      if (previous.includes(id)) return previous;
-      const next = [...previous, id];
+      if (previous.includes(id)) return previous
+      const next = [...previous, id]
       try {
-        localStorage.setItem("milo-discoveries", JSON.stringify(next));
+        localStorage.setItem('milo-discoveries', JSON.stringify(next))
       } catch {}
-      return next;
-    });
-    const landmark = landmarks.find((item) => item.id === id);
-    if (landmark) setToast(`Discovered: ${landmark.name}`);
-  };
-  const openPanel = (next: Panel) => setPanel((current) => (current === next ? null : next));
+      return next
+    })
+    const landmark = landmarks.find((item) => item.id === id)
+    if (landmark) setToast(`Discovered: ${landmark.name}`)
+  }
+  const openPanel = (next: Panel) => setPanel((current) => (current === next ? null : next))
   const takePhoto = () => {
-    scene.current?.capture();
-    setToast("A little memory, captured. Photo downloaded.");
-  };
+    scene.current?.capture()
+    setToast('A little memory, captured. Photo downloaded.')
+  }
   const runScan = () => {
     if (powered) {
-      setScan((value) => value + 1);
-      setToast("Scanning the meadow...");
+      setScan((value) => value + 1)
+      setToast('Scanning the meadow...')
     }
-  };
+  }
   const reset = () => {
-    scene.current?.reset();
-    setPaused(false);
-    setToast("Back on familiar ground.");
-  };
+    scene.current?.reset()
+    setPaused(false)
+    setToast('Back on familiar ground.')
+  }
   const toggleFullscreen = () => {
     const operation = document.fullscreenElement
       ? document.exitFullscreen()
-      : app.current?.requestFullscreen();
-    void operation?.catch(() => setToast("Fullscreen is unavailable in this browser view."));
-  };
+      : app.current?.requestFullscreen()
+    void operation?.catch(() => setToast('Fullscreen is unavailable in this browser view.'))
+  }
   const distanceLabel =
     telemetry.distance >= 1000
       ? `${(telemetry.distance / 1000).toFixed(2)} km`
-      : `${Math.floor(telemetry.distance)} m`;
+      : `${Math.floor(telemetry.distance)} m`
 
   return (
     <div
       className="app"
       ref={app}
-      data-physics={ready ? "ready" : "loading"}
+      data-physics={ready ? 'ready' : 'loading'}
       data-vehicle-x={telemetry.x.toFixed(3)}
       data-vehicle-z={telemetry.z.toFixed(3)}
       data-speed={telemetry.speed.toFixed(3)}
@@ -598,14 +596,14 @@ function App() {
           </span>
         </button>
         <nav className="main-nav" aria-label="Main navigation">
-          <button className={panel !== "journal" ? "active" : ""} onClick={() => setPanel(null)}>
+          <button className={panel !== 'journal' ? 'active' : ''} onClick={() => setPanel(null)}>
             <Compass size={16} /> Explore
           </button>
           <button
-            className={panel === "journal" ? "active" : ""}
-            onClick={() => openPanel("journal")}
+            className={panel === 'journal' ? 'active' : ''}
+            onClick={() => openPanel('journal')}
           >
-            <NotebookPen size={16} /> Field journal{" "}
+            <NotebookPen size={16} /> Field journal{' '}
             <span className="journal-count">{discovered.length}</span>
           </button>
         </nav>
@@ -616,15 +614,15 @@ function App() {
           </span>
           <span className="tool-divider" />
           <IconButton
-            label={sound ? "Mute ambient sound" : "Enable ambient sound"}
+            label={sound ? 'Mute ambient sound' : 'Enable ambient sound'}
             onClick={() => setSound((value) => !value)}
           >
             {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
           </IconButton>
           <IconButton
             label="World settings"
-            active={panel === "settings"}
-            onClick={() => openPanel("settings")}
+            active={panel === 'settings'}
+            onClick={() => openPanel('settings')}
           >
             <Settings2 size={18} />
           </IconButton>
@@ -641,17 +639,17 @@ function App() {
         <SceneBoundary>
           <Canvas
             shadows={{ type: PCFShadowMap }}
-            dpr={quality === "high" ? [1, 1.75] : [1, 1.15]}
+            dpr={quality === 'high' ? [1, 1.75] : [1, 1.15]}
             camera={{ position: [3, 3, 8], fov: 42, near: 0.08, far: 450 }}
             gl={{
               antialias: true,
               alpha: false,
-              powerPreference: "high-performance",
+              powerPreference: 'high-performance',
               preserveDrawingBuffer: true,
             }}
             onCreated={({ gl }) => {
-              gl.toneMapping = ACESFilmicToneMapping;
-              gl.toneMappingExposure = 0.96;
+              gl.toneMapping = ACESFilmicToneMapping
+              gl.toneMappingExposure = 0.96
             }}
             aria-label="Drivable ivory and charcoal robot in a sunlit meadow"
             fallback={
@@ -692,15 +690,15 @@ function App() {
           <div className="location-eyebrow">
             <span className="location-icon">
               <Sprout size={13} />
-            </span>{" "}
+            </span>{' '}
             THE LOWLANDS <span className="location-separator">/</span> 01
           </div>
           <h1>Sunpetal Meadow</h1>
           <div className="weather-line">
             {evening ? <Moon size={14} /> : <Sun size={15} />}
-            <span>{evening ? "18" : "22"}&deg;C</span>
+            <span>{evening ? '18' : '22'}&deg;C</span>
             <span className="weather-dot" />
-            <span>{evening ? "Golden hour" : "Gentle breeze"}</span>
+            <span>{evening ? 'Golden hour' : 'Gentle breeze'}</span>
           </div>
         </section>
         <HeadingCompass heading={telemetry.heading} />
@@ -710,9 +708,9 @@ function App() {
           </IconButton>
           <span className="vertical-divider" />
           <IconButton
-            label={cameraMode === "follow" ? "Switch to orbit camera" : "Switch to follow camera"}
-            active={cameraMode === "orbit"}
-            onClick={() => setCameraMode((mode) => (mode === "follow" ? "orbit" : "follow"))}
+            label={cameraMode === 'follow' ? 'Switch to orbit camera' : 'Switch to follow camera'}
+            active={cameraMode === 'orbit'}
+            onClick={() => setCameraMode((mode) => (mode === 'follow' ? 'orbit' : 'follow'))}
           >
             <Orbit size={19} />
           </IconButton>
@@ -733,7 +731,7 @@ function App() {
             <b>
               {Math.round(
                 Math.hypot(telemetry.x - selectedLandmark.x, telemetry.z - selectedLandmark.z),
-              )}{" "}
+              )}{' '}
               m
             </b>
             <X size={12} />
@@ -754,7 +752,7 @@ function App() {
           </div>
         )}
         <div className="bottom-hud">
-          <Speedometer telemetry={telemetry} powered={powered} onRobot={() => openPanel("robot")} />
+          <Speedometer telemetry={telemetry} powered={powered} onRobot={() => openPanel('robot')} />
           <div className="drive-console" aria-label="Driving controls">
             <div className="direction-controls">
               <DriveButton
@@ -823,24 +821,24 @@ function App() {
               <span>
                 <Navigation size={11} /> N
               </span>
-              <button aria-label="Open meadow map" onClick={() => openPanel("map")}>
+              <button aria-label="Open meadow map" onClick={() => openPanel('map')}>
                 <Maximize size={13} />
               </button>
             </div>
             <button
               className="minimap-image"
               aria-label="Expand meadow map"
-              onClick={() => openPanel("map")}
+              onClick={() => openPanel('map')}
             >
               <Minimap telemetry={telemetry} discovered={discovered} waypoint={waypoint} />
             </button>
             <div className="map-coordinates">
               <span>
-                {telemetry.x >= 0 ? "E" : "W"} {Math.abs(telemetry.x).toFixed(0).padStart(3, "0")}
+                {telemetry.x >= 0 ? 'E' : 'W'} {Math.abs(telemetry.x).toFixed(0).padStart(3, '0')}
               </span>
               <i />
               <span>
-                {telemetry.z >= 0 ? "S" : "N"} {Math.abs(telemetry.z).toFixed(0).padStart(3, "0")}
+                {telemetry.z >= 0 ? 'S' : 'N'} {Math.abs(telemetry.z).toFixed(0).padStart(3, '0')}
               </span>
               <span className="map-live-dot" />
             </div>
@@ -871,7 +869,7 @@ function App() {
               onClick={() => setPanel(null)}
             />
             <section
-              className={`side-panel ${panel === "map" ? "map-drawer" : ""}`}
+              className={`side-panel ${panel === 'map' ? 'map-drawer' : ''}`}
               role="dialog"
               aria-modal="true"
               aria-labelledby="panel-title"
@@ -880,30 +878,30 @@ function App() {
             >
               <div className="panel-heading">
                 <span className="panel-heading-icon">
-                  {panel === "journal" ? (
+                  {panel === 'journal' ? (
                     <NotebookPen size={19} />
-                  ) : panel === "settings" ? (
+                  ) : panel === 'settings' ? (
                     <Settings2 size={19} />
-                  ) : panel === "map" ? (
+                  ) : panel === 'map' ? (
                     <Map size={19} />
                   ) : (
                     <Wrench size={19} />
                   )}
                 </span>
                 <h2 id="panel-title">
-                  {panel === "journal"
-                    ? "Field journal"
-                    : panel === "settings"
-                      ? "World settings"
-                      : panel === "map"
-                        ? "The Lowlands"
-                        : "Meet Milo"}
+                  {panel === 'journal'
+                    ? 'Field journal'
+                    : panel === 'settings'
+                      ? 'World settings'
+                      : panel === 'map'
+                        ? 'The Lowlands'
+                        : 'Meet Milo'}
                 </h2>
                 <IconButton label="Close panel" onClick={() => setPanel(null)}>
                   <X size={19} />
                 </IconButton>
               </div>
-              {panel === "journal" && (
+              {panel === 'journal' && (
                 <div className="journal-content">
                   <div className="journal-summary">
                     <span className="section-eyebrow">SUNPETAL MEADOW / DAY 01</span>
@@ -915,7 +913,7 @@ function App() {
                     <div className="discovery-progress">
                       {landmarks.map((landmark) => (
                         <span
-                          className={discovered.includes(landmark.id) ? "found" : ""}
+                          className={discovered.includes(landmark.id) ? 'found' : ''}
                           key={landmark.id}
                         />
                       ))}
@@ -923,18 +921,18 @@ function App() {
                   </div>
                   <div className="journal-list">
                     {landmarks.map((landmark, index) => {
-                      const found = discovered.includes(landmark.id);
+                      const found = discovered.includes(landmark.id)
                       const LandmarkIcon =
-                        landmark.icon === "tree"
+                        landmark.icon === 'tree'
                           ? TreePine
-                          : landmark.icon === "mushroom"
+                          : landmark.icon === 'mushroom'
                             ? Flower2
-                            : landmark.icon === "stone"
+                            : landmark.icon === 'stone'
                               ? Mountain
-                              : Leaf;
+                              : Leaf
                       return (
                         <article
-                          className={`journal-entry ${found ? "discovered" : ""}`}
+                          className={`journal-entry ${found ? 'discovered' : ''}`}
                           key={landmark.id}
                         >
                           <div className="journal-art">
@@ -951,50 +949,50 @@ function App() {
                               <span className="unexplored-label">
                                 {Math.round(
                                   Math.hypot(telemetry.x - landmark.x, telemetry.z - landmark.z),
-                                )}{" "}
+                                )}{' '}
                                 m away
                               </span>
                             )}
                             <button
                               className="waypoint-link"
                               onClick={() => {
-                                setWaypoint(landmark.id);
-                                setPanel(null);
+                                setWaypoint(landmark.id)
+                                setPanel(null)
                               }}
                             >
-                              <MapPin size={12} />{" "}
-                              {waypoint === landmark.id ? "Waypoint set" : "Set waypoint"}
+                              <MapPin size={12} />{' '}
+                              {waypoint === landmark.id ? 'Waypoint set' : 'Set waypoint'}
                               <ArrowUpRight size={13} />
                             </button>
                           </div>
                         </article>
-                      );
+                      )
                     })}
                   </div>
                   <div className="journal-footer">
                     <Sprout size={16} />
                     <span>
                       {discovered.length === 4
-                        ? "Every corner holds a little memory."
-                        : "The best things are often the smallest."}
+                        ? 'Every corner holds a little memory.'
+                        : 'The best things are often the smallest.'}
                     </span>
                   </div>
                 </div>
               )}
-              {panel === "settings" && (
+              {panel === 'settings' && (
                 <div className="settings-content">
                   <fieldset>
                     <legend>TIME OF DAY</legend>
                     <div className="segmented-control">
                       <button
-                        className={!evening ? "selected" : ""}
+                        className={!evening ? 'selected' : ''}
                         aria-pressed={!evening}
                         onClick={() => setEvening(false)}
                       >
                         <Sun size={15} /> Daylight
                       </button>
                       <button
-                        className={evening ? "selected" : ""}
+                        className={evening ? 'selected' : ''}
                         aria-pressed={evening}
                         onClick={() => setEvening(true)}
                       >
@@ -1006,16 +1004,16 @@ function App() {
                     <legend>CAMERA</legend>
                     <div className="segmented-control">
                       <button
-                        className={cameraMode === "follow" ? "selected" : ""}
-                        aria-pressed={cameraMode === "follow"}
-                        onClick={() => setCameraMode("follow")}
+                        className={cameraMode === 'follow' ? 'selected' : ''}
+                        aria-pressed={cameraMode === 'follow'}
+                        onClick={() => setCameraMode('follow')}
                       >
                         <Navigation size={15} /> Follow
                       </button>
                       <button
-                        className={cameraMode === "orbit" ? "selected" : ""}
-                        aria-pressed={cameraMode === "orbit"}
-                        onClick={() => setCameraMode("orbit")}
+                        className={cameraMode === 'orbit' ? 'selected' : ''}
+                        aria-pressed={cameraMode === 'orbit'}
+                        onClick={() => setCameraMode('orbit')}
                       >
                         <Orbit size={15} /> Orbit
                       </button>
@@ -1037,16 +1035,16 @@ function App() {
                     <legend>RENDER QUALITY</legend>
                     <div className="segmented-control">
                       <button
-                        className={quality === "balanced" ? "selected" : ""}
-                        aria-pressed={quality === "balanced"}
-                        onClick={() => setQuality("balanced")}
+                        className={quality === 'balanced' ? 'selected' : ''}
+                        aria-pressed={quality === 'balanced'}
+                        onClick={() => setQuality('balanced')}
                       >
                         Balanced
                       </button>
                       <button
-                        className={quality === "high" ? "selected" : ""}
-                        aria-pressed={quality === "high"}
-                        onClick={() => setQuality("high")}
+                        className={quality === 'high' ? 'selected' : ''}
+                        aria-pressed={quality === 'high'}
+                        onClick={() => setQuality('high')}
                       >
                         High detail
                       </button>
@@ -1079,8 +1077,8 @@ function App() {
                   <button
                     className="reset-position-button"
                     onClick={() => {
-                      reset();
-                      setPanel(null);
+                      reset()
+                      setPanel(null)
                     }}
                   >
                     <RotateCcw size={16} /> Return to the clearing
@@ -1093,7 +1091,7 @@ function App() {
                   </div>
                 </div>
               )}
-              {panel === "robot" && (
+              {panel === 'robot' && (
                 <div className="robot-content">
                   <div className="robot-profile">
                     <div className="profile-symbol">
@@ -1104,8 +1102,8 @@ function App() {
                       Milo<span>01</span>
                     </h3>
                     <span className="robot-profile-status">
-                      <span className={`status-dot ${!powered ? "offline" : ""}`} />
-                      {powered ? "All systems curious" : "Taking a little rest"}
+                      <span className={`status-dot ${!powered ? 'offline' : ''}`} />
+                      {powered ? 'All systems curious' : 'Taking a little rest'}
                     </span>
                   </div>
                   <div className="robot-specs">
@@ -1130,12 +1128,12 @@ function App() {
                     <button onClick={() => setPowered((value) => !value)} aria-pressed={powered}>
                       <Power size={18} />
                       <span>Power</span>
-                      <b>{powered ? "On" : "Off"}</b>
+                      <b>{powered ? 'On' : 'Off'}</b>
                     </button>
                     <button
                       onClick={() => {
-                        runScan();
-                        setPanel(null);
+                        runScan()
+                        setPanel(null)
                       }}
                       disabled={!powered}
                     >
@@ -1149,26 +1147,26 @@ function App() {
                     >
                       <Wrench size={18} />
                       <span>Rear service hatch</span>
-                      <b>{hatchOpen ? "Open" : "Closed"}</b>
+                      <b>{hatchOpen ? 'Open' : 'Closed'}</b>
                     </button>
                     <button onClick={() => setLights((value) => !value)} aria-pressed={lights}>
                       <Lightbulb size={18} />
                       <span>Running lights</span>
-                      <b>{lights ? "On" : "Off"}</b>
+                      <b>{lights ? 'On' : 'Off'}</b>
                     </button>
                   </div>
                   <button
                     className="reset-position-button"
                     onClick={() => {
-                      reset();
-                      setPanel(null);
+                      reset()
+                      setPanel(null)
                     }}
                   >
                     <RotateCcw size={16} /> Back on your wheels
                   </button>
                 </div>
               )}
-              {panel === "map" && (
+              {panel === 'map' && (
                 <div className="expanded-map">
                   <div className="map-title-row">
                     <div>
@@ -1197,11 +1195,11 @@ function App() {
                   <div className="map-destinations">
                     {landmarks.map((landmark) => (
                       <button
-                        className={waypoint === landmark.id ? "selected" : ""}
+                        className={waypoint === landmark.id ? 'selected' : ''}
                         key={landmark.id}
                         onClick={() => {
-                          setWaypoint(landmark.id);
-                          setPanel(null);
+                          setWaypoint(landmark.id)
+                          setPanel(null)
                         }}
                       >
                         <MapPin size={15} />
@@ -1209,7 +1207,7 @@ function App() {
                         <span>
                           {Math.round(
                             Math.hypot(telemetry.x - landmark.x, telemetry.z - landmark.z),
-                          )}{" "}
+                          )}{' '}
                           m
                         </span>
                         <ChevronRight size={15} />
@@ -1224,20 +1222,20 @@ function App() {
       </main>
       <footer className="status-bar">
         <div className="connection-status">
-          <span className={`status-dot ${!powered ? "offline" : ""}`} />
+          <span className={`status-dot ${!powered ? 'offline' : ''}`} />
           <span>
             {!ready
-              ? "CONNECTING"
+              ? 'CONNECTING'
               : paused || panel
-                ? "AT REST"
+                ? 'AT REST'
                 : powered
-                  ? "CONNECTED"
-                  : "STANDBY"}
+                  ? 'CONNECTED'
+                  : 'STANDBY'}
           </span>
           <span className="footer-divider" />
           <span>Free roam</span>
         </div>
-        <button className="discovery-link" onClick={() => openPanel("journal")}>
+        <button className="discovery-link" onClick={() => openPanel('journal')}>
           <Leaf size={13} />
           <span>
             <b>{discovered.length}</b> / 4 discoveries
@@ -1250,7 +1248,7 @@ function App() {
             <RotateCcw size={14} />
           </IconButton>
           <IconButton
-            label={paused ? "Resume simulation" : "Pause simulation"}
+            label={paused ? 'Resume simulation' : 'Pause simulation'}
             onClick={() => setPaused((value) => !value)}
             disabled={!ready}
           >
@@ -1259,7 +1257,7 @@ function App() {
         </div>
       </footer>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
